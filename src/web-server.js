@@ -45,6 +45,17 @@ class DubboTestWebServer {
             }
         });
 
+        // 更新服务
+        this.app.put('/api/services/:serviceId', async (req, res) => {
+            try {
+                const { name, dubboConfig } = req.body;
+                await this.dataManager.updateService(req.params.serviceId, { name, dubboConfig });
+                res.json({ success: true });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
         this.app.delete('/api/services/:serviceId', async (req, res) => {
             try {
                 await this.dataManager.removeService(req.params.serviceId);
@@ -59,6 +70,17 @@ class DubboTestWebServer {
                 const { name } = req.body;
                 const newInterface = await this.dataManager.addInterface(req.params.serviceId, name);
                 res.json({ success: true, data: newInterface });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
+        // 更新接口
+        this.app.put('/api/services/:serviceId/interfaces/:interfaceId', async (req, res) => {
+            try {
+                const { name } = req.body;
+                await this.dataManager.updateInterface(req.params.serviceId, req.params.interfaceId, { name });
+                res.json({ success: true });
             } catch (error) {
                 res.status(500).json({ success: false, error: error.message });
             }
@@ -83,6 +105,22 @@ class DubboTestWebServer {
                     methodData
                 );
                 res.json({ success: true, data: method });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
+        // 更新方法
+        this.app.put('/api/services/:serviceId/interfaces/:interfaceId/methods/:methodId', async (req, res) => {
+            try {
+                const methodData = req.body;
+                await this.dataManager.updateMethod(
+                    req.params.serviceId,
+                    req.params.interfaceId,
+                    req.params.methodId,
+                    methodData
+                );
+                res.json({ success: true });
             } catch (error) {
                 res.status(500).json({ success: false, error: error.message });
             }

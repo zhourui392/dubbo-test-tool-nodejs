@@ -232,6 +232,20 @@ class DataManager {
     }
 
     /**
+     * 更新接口
+     */
+    async updateInterface(serviceId, interfaceId, { name } = {}) {
+        const service = this.services.find(s => s.id === serviceId);
+        if (service) {
+            const targetInterface = service.interfaces.find(i => i.id === interfaceId);
+            if (targetInterface) {
+                if (name !== undefined) targetInterface.name = name;
+                await this.saveData();
+            }
+        }
+    }
+
+    /**
      * 添加方法
      */
     async addMethod(serviceId, interfaceId, { name, params = '{}', returnType = '', description = '' }) {
