@@ -1,0 +1,163 @@
+{
+  "services": [
+    {
+      "id": "user-service-001",
+      "name": "用户服务",
+      "dubbo_config": {
+        "host": "127.0.0.1",
+        "port": 20880,
+        "timeout": 5000,
+        "version": "1.0.0",
+        "group": "user"
+      },
+      "interfaces": [
+        {
+          "id": "user-interface-001",
+          "name": "com.company.service.user.UserService",
+          "methods": [
+            {
+              "id": "get-user-info",
+              "name": "getUserInfo",
+              "params": "{\"userId\": \"123456\"}",
+              "return_type": "UserDTO",
+              "description": "根据用户ID获取用户信息"
+            },
+            {
+              "id": "update-user",
+              "name": "updateUser",
+              "params": "{\"userId\": \"123456\", \"name\": \"张三\", \"email\": \"zhangsan@example.com\"}",
+              "return_type": "boolean",
+              "description": "更新用户信息"
+            },
+            {
+              "id": "create-user",
+              "name": "createUser",
+              "params": "{\"name\": \"李四\", \"email\": \"lisi@example.com\", \"phone\": \"13800138000\"}",
+              "return_type": "String",
+              "description": "创建新用户"
+            }
+          ]
+        },
+        {
+          "id": "user-auth-interface",
+          "name": "com.company.service.user.AuthService",
+          "methods": [
+            {
+              "id": "login-method",
+              "name": "login",
+              "params": "{\"username\": \"admin\", \"password\": \"123456\"}",
+              "return_type": "TokenDTO",
+              "description": "用户登录"
+            },
+            {
+              "id": "logout-method",
+              "name": "logout",
+              "params": "{\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"}",
+              "return_type": "boolean",
+              "description": "用户退出登录"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "order-service-001",
+      "name": "订单服务",
+      "dubbo_config": {
+        "host": "127.0.0.1",
+        "port": 20881,
+        "timeout": 8000,
+        "version": "2.0.0",
+        "group": "order"
+      },
+      "interfaces": [
+        {
+          "id": "order-interface-001",
+          "name": "com.company.service.order.OrderService",
+          "methods": [
+            {
+              "id": "create-order",
+              "name": "createOrder",
+              "params": "{\"userId\": \"123456\", \"merchantId\": \"M001\", \"items\": [{\"productId\": \"P001\", \"quantity\": 2, \"price\": 29.99}], \"deliveryAddress\": \"北京市朝阳区xxx街道\"}",
+              "return_type": "OrderDTO",
+              "description": "创建新订单"
+            },
+            {
+              "id": "get-order",
+              "name": "getOrder",
+              "params": "{\"orderId\": \"ORD001\"}",
+              "return_type": "OrderDTO",
+              "description": "根据订单ID获取订单详情"
+            },
+            {
+              "id": "update-order-status",
+              "name": "updateOrderStatus",
+              "params": "{\"orderId\": \"ORD001\", \"status\": \"IN_PROGRESS\"}",
+              "return_type": "boolean",
+              "description": "更新订单状态"
+            },
+            {
+              "id": "cancel-order",
+              "name": "cancelOrder",
+              "params": "{\"orderId\": \"ORD001\", \"reason\": \"用户取消\"}",
+              "return_type": "boolean",
+              "description": "取消订单"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "payment-service-001",
+      "name": "支付服务",
+      "dubbo_config": {
+        "host": "127.0.0.1",
+        "port": 20882,
+        "timeout": 10000,
+        "version": "1.5.0",
+        "group": "payment"
+      },
+      "interfaces": [
+        {
+          "id": "payment-interface-001",
+          "name": "com.company.service.payment.PaymentService",
+          "methods": [
+            {
+              "id": "create-payment",
+              "name": "createPayment",
+              "params": "{\"orderId\": \"ORD001\", \"amount\": 59.98, \"paymentMethod\": \"WECHAT_PAY\"}",
+              "return_type": "PaymentDTO",
+              "description": "创建支付订单"
+            },
+            {
+              "id": "process-payment",
+              "name": "processPayment",
+              "params": "{\"paymentId\": \"PAY001\", \"paymentToken\": \"wx_token_123\"}",
+              "return_type": "PaymentResultDTO",
+              "description": "处理支付"
+            },
+            {
+              "id": "refund-payment",
+              "name": "refundPayment",
+              "params": "{\"paymentId\": \"PAY001\", \"refundAmount\": 59.98, \"reason\": \"订单取消\"}",
+              "return_type": "RefundDTO",
+              "description": "退款处理"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5410d409-c8c1-4199-9185-27346b70a844",
+      "name": "测试1111",
+      "dubbo_config": {
+        "host": "127.0.0.1",
+        "port": 20880,
+        "timeout": 5000,
+        "version": "",
+        "group": ""
+      },
+      "interfaces": []
+    }
+  ]
+}
