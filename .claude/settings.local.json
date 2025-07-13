@@ -4,7 +4,9 @@
       "Bash(git add:*)",
       "Bash(npm install:*)",
       "Bash(git commit:*)",
-      "Bash(npm start)"
+      "Bash(npm start)",
+      "Bash(chmod:*)",
+      "Bash(start.bat)"
     ],
     "deny": []
   }

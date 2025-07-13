@@ -9,7 +9,8 @@
 - **独立配置**：每个服务可以设置独立的Dubbo连接配置
 - **JSON参数**：支持JSON格式的参数输入，类似Postman
 - **数据持久化**：使用JSON文件保存所有配置和接口数据
-- **删除功能**：支持删除接口和方法
+- **CRUD操作**：支持服务、接口、方法的完整增删改查
+- **折叠树形结构**：支持服务和接口列表的折叠/展开，状态自动保存
 - **实时测试**：Web界面支持实时接口调用和结果展示
 - **真实Dubbo调用**：直接连接真实Dubbo服务进行测试
 
@@ -21,7 +22,35 @@ npm install
 
 ## 🛠️ 使用方法
 
-### 启动Web服务
+### 快速启动（推荐）
+
+#### Windows用户
+双击运行 `start.bat` 文件，或在命令行中执行：
+```cmd
+start.bat
+```
+
+#### Linux/macOS用户
+在终端中执行：
+```bash
+./start.sh
+```
+
+**启动脚本功能：**
+- 🔍 自动检测Node.js环境
+- 📦 首次运行时自动安装依赖
+- 📋 自动加载示例数据（如果存在）
+- 🚀 一键启动Web服务
+- 💡 显示详细的访问信息和使用提示
+
+### 手动启动
+
+#### 安装依赖
+```bash
+npm install
+```
+
+#### 启动Web服务
 
 ```bash
 npm start
@@ -29,11 +58,20 @@ npm start
 
 然后访问：http://localhost:3000
 
+### 开发模式启动
+
+```bash
+npm run dev  # 使用nodemon自动重启
+```
+
 ### 环境变量配置
 
 ```bash
 # 自定义端口
 PORT=8080 npm start
+
+# Windows
+set PORT=8080 && npm start
 ```
 
 ## 📁 项目结构
@@ -41,6 +79,8 @@ PORT=8080 npm start
 ```
 dubbo-test-tool-nodejs/
 ├── package.json              # 项目配置和依赖
+├── start.bat                 # Windows一键启动脚本
+├── start.sh                  # Linux/macOS一键启动脚本
 ├── demo-interfaces.json      # 示例数据
 ├── interfaces.json           # 数据文件（自动生成）
 ├── src/
@@ -73,12 +113,19 @@ dubbo-test-tool-nodejs/
 
 ### 服务管理
 - **添加服务**：点击"➕ 添加服务"按钮创建新服务
-- **服务树形导航**：展示所有服务、接口和方法
-- **折叠/展开**：支持服务和接口的折叠展开
+- **编辑服务**：点击服务旁的"✏️"按钮修改服务配置
+- **删除服务**：点击服务旁的"🗑️"按钮删除整个服务
+- **服务树形导航**：展示所有服务、接口和方法的层次结构
+- **折叠/展开**：点击 ▶/▼ 图标折叠或展开服务和接口列表
+- **状态持久化**：折叠状态自动保存到本地存储，刷新后恢复
 
 ### 接口和方法管理
-- **删除接口**：在接口名称旁点击"🗑️"按钮删除整个接口
-- **删除方法**：在方法名称旁点击"🗑️"按钮删除单个方法
+- **添加接口**：点击服务旁的"➕"按钮添加新接口
+- **编辑接口**：点击接口旁的"✏️"按钮修改接口名称
+- **删除接口**：点击接口旁的"🗑️"按钮删除整个接口
+- **添加方法**：点击接口旁的"➕"按钮添加新方法
+- **编辑方法**：点击方法旁的"✏️"按钮修改方法信息
+- **删除方法**：点击方法旁的"🗑️"按钮删除单个方法
 - **方法选择**：点击方法名称选择要测试的方法
 
 ### 接口测试面板
@@ -103,7 +150,13 @@ dubbo-test-tool-nodejs/
 
 使用示例数据：
 ```bash
-cp demo-interfaces.json interfaces.json
+# 自动加载（使用启动脚本会自动处理）
+start.bat          # Windows
+./start.sh          # Linux/macOS
+
+# 手动复制
+cp demo-interfaces.json interfaces.json        # Linux/macOS
+copy demo-interfaces.json interfaces.json      # Windows
 ```
 
 ## 🔌 API接口
@@ -113,14 +166,17 @@ Web服务器提供以下REST API：
 ### 服务管理
 - `GET /api/services` - 获取所有服务
 - `POST /api/services` - 添加新服务
+- `PUT /api/services/:serviceId` - 更新服务配置
 - `DELETE /api/services/:serviceId` - 删除服务
 
 ### 接口管理
 - `POST /api/services/:serviceId/interfaces` - 添加接口
+- `PUT /api/services/:serviceId/interfaces/:interfaceId` - 更新接口
 - `DELETE /api/services/:serviceId/interfaces/:interfaceId` - 删除接口
 
 ### 方法管理
 - `POST /api/services/:serviceId/interfaces/:interfaceId/methods` - 添加方法
+- `PUT /api/services/:serviceId/interfaces/:interfaceId/methods/:methodId` - 更新方法
 - `DELETE /api/services/:serviceId/interfaces/:interfaceId/methods/:methodId` - 删除方法
 
 ### 测试调用
@@ -145,6 +201,8 @@ Web服务器提供以下REST API：
 - **响应式设计**：支持桌面和移动设备
 - **实时更新**：WebSocket实时数据同步
 - **现代UI**：Material Design风格界面
+- **交互体验**：支持树形结构折叠展开，状态持久化
+- **本地存储**：使用localStorage保存用户界面偏好设置
 
 ## 📋 技术栈
 
@@ -164,6 +222,10 @@ npm run dev  # 使用nodemon自动重启
 ### 生产环境
 ```bash
 npm start    # 直接启动服务
+
+# 或使用启动脚本
+start.bat    # Windows
+./start.sh   # Linux/macOS
 ```
 
 ### Docker部署
@@ -191,6 +253,9 @@ CMD ["npm", "start"]
 - 接口文档生成
 - 环境配置管理
 - 用户权限管理
+- 导入/导出配置功能
+- 接口性能监控
+- 自动化测试脚本
 
 ## 📄 许可证
 
