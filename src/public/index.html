@@ -5,59 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dubbo接口测试工具</title>
     <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px 0;
-            text-align: center;
-            margin-bottom: 30px;
-            border-radius: 10px;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1em;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 30px;
-            min-height: 600px;
-        }
-
+        /* Custom styles for specific components */
         .sidebar {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .content-area {
             background: white;
             border-radius: 10px;
             padding: 20px;
@@ -82,7 +34,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: relative;
         }
 
         .collapse-icon {
@@ -148,7 +99,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: relative;
         }
 
         .interface-header span {
@@ -179,6 +129,90 @@
         .interface-actions {
             display: flex;
             gap: 5px;
+        }
+
+        .methods {
+            margin-top: 8px;
+            margin-left: 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .methods.expanded {
+            max-height: 1000px;
+        }
+
+        .method-item {
+            padding: 6px 12px;
+            background: #f1f3f4;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .method-item:hover {
+            background: #e8f0fe;
+            border-color: #4285f4;
+        }
+
+        .method-item.is-active {
+            background: #4285f4;
+            color: white;
+        }
+
+        .test-panel {
+            display: none;
+        }
+
+        .test-panel.is-active {
+            display: block;
+        }
+
+        .result-content {
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            white-space: pre-wrap;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-style: italic;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .config-info {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-bottom: 30px;
         }
 
         .action-btn {
@@ -212,6 +246,11 @@
         .edit-btn {
             background: #28a745;
             color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
         }
 
         .edit-btn:hover {
@@ -221,417 +260,295 @@
         .add-btn {
             background: #007bff;
             color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
         }
 
         .add-btn:hover {
             background: #0056b3;
         }
-
-        .methods {
-            margin-top: 8px;
-            margin-left: 15px;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-        }
-
-        .methods.expanded {
-            max-height: 1000px;
-        }
-
-        .method-item {
-            padding: 6px 12px;
-            background: #f1f3f4;
-            margin-bottom: 5px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .method-item:hover {
-            background: #e8f0fe;
-            border-color: #4285f4;
-        }
-
-        .method-item.active {
-            background: #4285f4;
-            color: white;
-        }
-
-        .test-panel {
-            display: none;
-        }
-
-        .test-panel.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #495057;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        textarea.form-control {
-            min-height: 150px;
-            resize: vertical;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5a6fd8;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .result-panel {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
-        }
-
-        .result-header {
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #495057;
-        }
-
-        .result-content {
-            background: #fff;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #dee2e6;
-            white-space: pre-wrap;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 13px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .loading {
-            text-align: center;
-            color: #667eea;
-            font-style: italic;
-        }
-
-        .error {
-            color: #dc3545;
-            background: #f8d7da;
-            border-color: #f5c6cb;
-        }
-
-        .success {
-            color: #155724;
-            background: #d4edda;
-            border-color: #c3e6cb;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: #6c757d;
-            font-style: italic;
-            padding: 40px 20px;
-        }
-
-        .config-info {
-            font-size: 0.85em;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-
-        .toolbar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
-        }
-
-        .btn-sm {
-            padding: 8px 16px;
-            font-size: 12px;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            font-size: 1.5em;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 30px;
-        }
-
-        .btn-cancel {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-cancel:hover {
-            background: #5a6268;
-        }
-
-        .btn-confirm {
-            background: #007bff;
-            color: white;
-        }
-
-        .btn-confirm:hover {
-            background: #0056b3;
-        }
-
-        @media (max-width: 1024px) {
-            .main-content {
-                grid-template-columns: 300px 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🔧 Dubbo接口测试工具</h1>
-            <p>Node.js版本 - 支持Dubbo RPC接口测试</p>
-        </div>
-
-        <div class="main-content">
-            <div class="sidebar">
-                <div class="toolbar">
-                    <button class="btn btn-secondary btn-sm" onclick="app.showAddServiceModal()">➕ 添加服务</button>
-                    <button class="btn btn-secondary btn-sm" onclick="app.refreshServices()">🔄 刷新</button>
-                </div>
-                
-                <h3 style="margin-bottom: 20px; color: #495057;">📋 服务列表</h3>
-                <ul id="service-tree" class="service-tree">
-                    <li class="empty-state">正在加载服务...</li>
-                </ul>
+    <!-- Hero Section -->
+    <section class="hero is-primary is-small">
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <h1 class="title is-3">
+                    <span class="icon is-medium">
+                        <i class="fas fa-wrench"></i>
+                    </span>
+                    Dubbo接口测试工具
+                </h1>
+                <p class="subtitle is-5">Node.js版本 - 支持Dubbo RPC接口测试</p>
             </div>
+        </div>
+    </section>
 
-            <div class="content-area">
-                <div id="welcome-panel">
-                    <div class="empty-state">
-                        <h3>👋 欢迎使用Dubbo测试工具</h3>
-                        <p>请从左侧选择要测试的方法</p>
-                        <br>
-                        <p>💡 使用说明：</p>
-                        <ul style="text-align: left; display: inline-block;">
-                            <li>点击"➕ 添加服务"创建新服务</li>
-                            <li>点击"✏️"可编辑服务、接口或方法</li>
-                            <li>点击"🗑️"可删除服务、接口或方法</li>
-                            <li>点击"➕"可添加接口或方法</li>
-                            <li>选择方法后可直接测试Dubbo接口</li>
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container is-fluid">
+            <div class="columns is-gapless">
+                <!-- Sidebar -->
+                <div class="column is-3">
+                    <div class="sidebar">
+                        <div class="field has-addons" style="margin-bottom: 20px;">
+                            <p class="control">
+                                <button class="button is-small is-success" onclick="app.showAddServiceModal()">
+                                    <span class="icon is-small">
+                                        <i class="fas fa-plus"></i>
+                                    </span>
+                                    <span>添加服务</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button is-small is-info" onclick="app.refreshServices()">
+                                    <span class="icon is-small">
+                                        <i class="fas fa-sync"></i>
+                                    </span>
+                                    <span>刷新</span>
+                                </button>
+                            </p>
+                        </div>
+                        
+                        <h3 class="title is-5 has-text-grey">
+                            <span class="icon">
+                                <i class="fas fa-list"></i>
+                            </span>
+                            服务列表
+                        </h3>
+                        <ul id="service-tree" class="service-tree">
+                            <li class="has-text-grey has-text-centered" style="padding: 40px 20px; font-style: italic;">正在加载服务...</li>
                         </ul>
                     </div>
                 </div>
 
-                <div id="test-panel" class="test-panel">
-                    <h3 id="method-title">方法测试</h3>
-                    
-                    <div class="form-group">
-                        <label for="interface-name">接口名称</label>
-                        <input type="text" id="interface-name" class="form-control" readonly>
-                    </div>
+                <!-- Content Area -->
+                <div class="column is-9">
+                    <div class="box">
+                        <div id="welcome-panel">
+                            <div class="has-text-centered has-text-grey" style="padding: 40px 20px;">
+                                <h3 class="title is-4">
+                                    <span class="icon">
+                                        <i class="fas fa-hand-wave"></i>
+                                    </span>
+                                    欢迎使用Dubbo测试工具
+                                </h3>
+                                <p class="subtitle is-6">请从左侧选择要测试的方法</p>
+                                <br>
+                                <div class="content">
+                                    <p class="has-text-weight-bold">
+                                        <span class="icon">
+                                            <i class="fas fa-lightbulb"></i>
+                                        </span>
+                                        使用说明：
+                                    </p>
+                                    <ul class="has-text-left" style="display: inline-block;">
+                                        <li>点击"<span class="icon is-small"><i class="fas fa-plus"></i></span> 添加服务"创建新服务</li>
+                                        <li>点击"<span class="icon is-small"><i class="fas fa-edit"></i></span>"可编辑服务、接口或方法</li>
+                                        <li>点击"<span class="icon is-small"><i class="fas fa-trash"></i></span>"可删除服务、接口或方法</li>
+                                        <li>点击"<span class="icon is-small"><i class="fas fa-plus"></i></span>"可添加接口或方法</li>
+                                        <li>选择方法后可直接测试Dubbo接口</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="form-group">
-                        <label for="method-name">方法名称</label>
-                        <input type="text" id="method-name" class="form-control" readonly>
-                    </div>
+                        <div id="test-panel" class="test-panel">
+                            <h3 id="method-title" class="title is-4">方法测试</h3>
+                            
+                            <div class="field">
+                                <label class="label" for="interface-name">接口名称</label>
+                                <div class="control">
+                                    <input type="text" id="interface-name" class="input" readonly>
+                                </div>
+                            </div>
 
-                    <div class="form-group">
-                        <label for="params-input">请求参数 (JSON格式) <button id="format-json-btn" class="btn btn-sm btn-secondary" style="margin-left: 10px;">🎨 格式化JSON</button></label>
-                        <textarea id="params-input" class="form-control" placeholder='{"userId": "123"}'></textarea>
-                    </div>
+                            <div class="field">
+                                <label class="label" for="method-name">方法名称</label>
+                                <div class="control">
+                                    <input type="text" id="method-name" class="input" readonly>
+                                </div>
+                            </div>
 
-                    <button id="test-btn" class="btn btn-primary">🧪 测试接口</button>
+                            <div class="field">
+                                <label class="label" for="params-input">
+                                    请求参数 (JSON格式)
+                                    <button id="format-json-btn" class="button is-small is-info" style="margin-left: 10px;">
+                                        <span class="icon is-small">
+                                            <i class="fas fa-palette"></i>
+                                        </span>
+                                        <span>格式化JSON</span>
+                                    </button>
+                                </label>
+                                <div class="control">
+                                    <textarea id="params-input" class="textarea" placeholder='{"userId": "123"}' rows="6"></textarea>
+                                </div>
+                            </div>
 
-                    <div id="result-panel" class="result-panel" style="display: none;">
-                        <div class="result-header">📋 响应结果</div>
-                        <div id="result-content" class="result-content"></div>
+                            <div class="field">
+                                <div class="control">
+                                    <button id="test-btn" class="button is-primary is-medium">
+                                        <span class="icon">
+                                            <i class="fas fa-flask"></i>
+                                        </span>
+                                        <span>测试接口</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="result-panel" class="notification" style="display: none; margin-top: 30px;">
+                                <div class="subtitle is-6 has-text-weight-bold">
+                                    <span class="icon">
+                                        <i class="fas fa-clipboard-list"></i>
+                                    </span>
+                                    响应结果
+                                </div>
+                                <div id="result-content" class="result-content"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
     <!-- Service Modal -->
     <div id="service-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header" id="service-modal-title">添加服务</div>
-            <form id="service-form">
-                <div class="form-group">
-                    <label for="service-name">服务名称</label>
-                    <input type="text" id="service-name" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="service-host">主机地址</label>
-                    <input type="text" id="service-host" class="form-control" value="127.0.0.1" required>
-                </div>
-                <div class="form-group">
-                    <label for="service-port">端口号</label>
-                    <input type="number" id="service-port" class="form-control" value="20880" required>
-                </div>
-                <div class="form-group">
-                    <label for="service-timeout">超时时间(ms)</label>
-                    <input type="number" id="service-timeout" class="form-control" value="5000" required>
-                </div>
-                <div class="form-group">
-                    <label for="service-version">版本号(可选)</label>
-                    <input type="text" id="service-version" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label for="service-group">分组(可选)</label>
-                    <input type="text" id="service-group" class="form-control">
-                </div>
-            </form>
-            <div class="modal-footer">
-                <button class="btn btn-cancel" onclick="app.hideServiceModal()">取消</button>
-                <button class="btn btn-confirm" onclick="app.saveService()">保存</button>
-            </div>
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title" id="service-modal-title">添加服务</p>
+                <button class="delete" onclick="app.hideServiceModal()"></button>
+            </header>
+            <section class="modal-card-body">
+                <form id="service-form">
+                    <div class="field">
+                        <label class="label" for="service-name">服务名称</label>
+                        <div class="control">
+                            <input type="text" id="service-name" class="input" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="service-host">主机地址</label>
+                        <div class="control">
+                            <input type="text" id="service-host" class="input" value="127.0.0.1" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="service-port">端口号</label>
+                        <div class="control">
+                            <input type="number" id="service-port" class="input" value="20880" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="service-timeout">超时时间(ms)</label>
+                        <div class="control">
+                            <input type="number" id="service-timeout" class="input" value="5000" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="service-version">版本号(可选)</label>
+                        <div class="control">
+                            <input type="text" id="service-version" class="input">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="service-group">分组(可选)</label>
+                        <div class="control">
+                            <input type="text" id="service-group" class="input">
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" onclick="app.saveService()">保存</button>
+                <button class="button" onclick="app.hideServiceModal()">取消</button>
+            </footer>
         </div>
     </div>
 
     <!-- Interface Modal -->
     <div id="interface-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header" id="interface-modal-title">添加接口</div>
-            <form id="interface-form">
-                <div class="form-group">
-                    <label for="interface-name-input">接口名称</label>
-                    <input type="text" id="interface-name-input" class="form-control" required 
-                           placeholder="com.example.UserService">
-                </div>
-            </form>
-            <div class="modal-footer">
-                <button class="btn btn-cancel" onclick="app.hideInterfaceModal()">取消</button>
-                <button class="btn btn-confirm" onclick="app.saveInterface()">保存</button>
-            </div>
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title" id="interface-modal-title">添加接口</p>
+                <button class="delete" onclick="app.hideInterfaceModal()"></button>
+            </header>
+            <section class="modal-card-body">
+                <form id="interface-form">
+                    <div class="field">
+                        <label class="label" for="interface-name-input">接口名称</label>
+                        <div class="control">
+                            <input type="text" id="interface-name-input" class="input" required 
+                                   placeholder="com.example.UserService">
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" onclick="app.saveInterface()">保存</button>
+                <button class="button" onclick="app.hideInterfaceModal()">取消</button>
+            </footer>
         </div>
     </div>
 
     <!-- Method Modal -->
     <div id="method-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header" id="method-modal-title">添加方法</div>
-            <form id="method-form">
-                <div class="form-group">
-                    <label for="method-name-input">方法名称</label>
-                    <input type="text" id="method-name-input" class="form-control" required 
-                           placeholder="getUserInfo">
-                </div>
-                <div class="form-group">
-                    <label for="method-params">默认参数(JSON格式) <button id="format-method-json-btn" class="btn btn-sm btn-secondary" style="margin-left: 10px;">🎨 格式化JSON</button></label>
-                    <textarea id="method-params" class="form-control" 
-                              placeholder='{"userId": "123"}'>{}</textarea>
-                </div>
-                <div class="form-group">
-                    <label for="method-return-type">返回类型(可选)</label>
-                    <input type="text" id="method-return-type" class="form-control" 
-                           placeholder="UserDTO">
-                </div>
-                <div class="form-group">
-                    <label for="method-description">方法描述(可选)</label>
-                    <input type="text" id="method-description" class="form-control" 
-                           placeholder="获取用户信息">
-                </div>
-            </form>
-            <div class="modal-footer">
-                <button class="btn btn-cancel" onclick="app.hideMethodModal()">取消</button>
-                <button class="btn btn-confirm" onclick="app.saveMethod()">保存</button>
-            </div>
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title" id="method-modal-title">添加方法</p>
+                <button class="delete" onclick="app.hideMethodModal()"></button>
+            </header>
+            <section class="modal-card-body">
+                <form id="method-form">
+                    <div class="field">
+                        <label class="label" for="method-name-input">方法名称</label>
+                        <div class="control">
+                            <input type="text" id="method-name-input" class="input" required 
+                                   placeholder="getUserInfo">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="method-params">
+                            默认参数(JSON格式) 
+                            <button id="format-method-json-btn" class="button is-small is-info" style="margin-left: 10px;">
+                                <span class="icon is-small">
+                                    <i class="fas fa-palette"></i>
+                                </span>
+                                <span>格式化JSON</span>
+                            </button>
+                        </label>
+                        <div class="control">
+                            <textarea id="method-params" class="textarea" 
+                                      placeholder='{"userId": "123"}'>{}</textarea>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="method-return-type">返回类型(可选)</label>
+                        <div class="control">
+                            <input type="text" id="method-return-type" class="input" 
+                                   placeholder="UserDTO">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label" for="method-description">方法描述(可选)</label>
+                        <div class="control">
+                            <input type="text" id="method-description" class="input" 
+                                   placeholder="获取用户信息">
+                        </div>
+                    </div>
+                </form>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" onclick="app.saveMethod()">保存</button>
+                <button class="button" onclick="app.hideMethodModal()">取消</button>
+            </footer>
         </div>
     </div>
 
@@ -683,7 +600,7 @@
 
                 // Close modals when clicking outside
                 window.addEventListener('click', (event) => {
-                    if (event.target.classList.contains('modal')) {
+                    if (event.target.classList.contains('modal-background')) {
                         this.hideAllModals();
                     }
                 });
@@ -725,7 +642,7 @@
                 this.editingService = null;
                 document.getElementById('service-modal-title').textContent = '添加服务';
                 document.getElementById('service-form').reset();
-                document.getElementById('service-modal').classList.add('show');
+                document.getElementById('service-modal').classList.add('is-active');
             }
 
             showEditServiceModal(serviceId) {
@@ -740,11 +657,11 @@
                 document.getElementById('service-timeout').value = service.dubbo_config.timeout;
                 document.getElementById('service-version').value = service.dubbo_config.version || '';
                 document.getElementById('service-group').value = service.dubbo_config.group || '';
-                document.getElementById('service-modal').classList.add('show');
+                document.getElementById('service-modal').classList.add('is-active');
             }
 
             hideServiceModal() {
-                document.getElementById('service-modal').classList.remove('show');
+                document.getElementById('service-modal').classList.remove('is-active');
                 this.editingService = null;
             }
 
@@ -801,7 +718,7 @@
                 this.editingInterface = { serviceId };
                 document.getElementById('interface-modal-title').textContent = '添加接口';
                 document.getElementById('interface-form').reset();
-                document.getElementById('interface-modal').classList.add('show');
+                document.getElementById('interface-modal').classList.add('is-active');
             }
 
             showEditInterfaceModal(serviceId, interfaceId) {
@@ -812,11 +729,11 @@
                 this.editingInterface = { serviceId, interfaceId, interface: iface };
                 document.getElementById('interface-modal-title').textContent = '编辑接口';
                 document.getElementById('interface-name-input').value = iface.name; // 显示完整接口名用于编辑
-                document.getElementById('interface-modal').classList.add('show');
+                document.getElementById('interface-modal').classList.add('is-active');
             }
 
             hideInterfaceModal() {
-                document.getElementById('interface-modal').classList.remove('show');
+                document.getElementById('interface-modal').classList.remove('is-active');
                 this.editingInterface = null;
             }
 
@@ -864,7 +781,7 @@
                 document.getElementById('method-modal-title').textContent = '添加方法';
                 document.getElementById('method-form').reset();
                 document.getElementById('method-params').value = '{}';
-                document.getElementById('method-modal').classList.add('show');
+                document.getElementById('method-modal').classList.add('is-active');
             }
 
             showEditMethodModal(serviceId, interfaceId, methodId) {
@@ -879,11 +796,11 @@
                 document.getElementById('method-params').value = method.params;
                 document.getElementById('method-return-type').value = method.return_type || '';
                 document.getElementById('method-description').value = method.description || '';
-                document.getElementById('method-modal').classList.add('show');
+                document.getElementById('method-modal').classList.add('is-active');
             }
 
             hideMethodModal() {
-                document.getElementById('method-modal').classList.remove('show');
+                document.getElementById('method-modal').classList.remove('is-active');
                 this.editingMethod = null;
             }
 
@@ -1004,7 +921,7 @@
                 const serviceTree = document.getElementById('service-tree');
                 
                 if (this.services.length === 0) {
-                    serviceTree.innerHTML = '<li class="empty-state">暂无服务，请点击"➕ 添加服务"</li>';
+                    serviceTree.innerHTML = '<li class="has-text-grey has-text-centered" style="padding: 40px 20px; font-style: italic;">暂无服务，请点击"添加服务"</li>';
                     return;
                 }
 
@@ -1014,16 +931,16 @@
                         <li class="service-item">
                             <div class="service-header" onclick="app.toggleService('${service.id}')">
                                 <div style="display: flex; align-items: center;">
-                                    <span class="collapse-icon" id="service-icon-${service.id}">▶</span>
+                                    <span class="collapse-icon" id="service-icon-${service.id}"><i class="fas fa-chevron-right"></i></span>
                                     <div>
                                         <div class="service-name">${service.name}</div>
                                         <div class="config-info">${service.dubbo_config.host}:${service.dubbo_config.port}</div>
                                     </div>
                                 </div>
                                 <div class="service-actions">
-                                    <button class="action-btn" onclick="event.stopPropagation(); app.testConnection('${service.id}')" title="测试连接">🔍</button>
-                                    <button class="add-btn" onclick="event.stopPropagation(); app.showAddInterfaceModal('${service.id}')" title="添加接口">➕</button>
-                                    <button class="edit-btn" onclick="event.stopPropagation(); app.showEditServiceModal('${service.id}')" title="编辑服务">✏️</button>
+                                    <button class="action-btn" onclick="event.stopPropagation(); app.testConnection('${service.id}')" title="测试连接"><i class="fas fa-search"></i></button>
+                                    <button class="add-btn" onclick="event.stopPropagation(); app.showAddInterfaceModal('${service.id}')" title="添加接口"><i class="fas fa-plus"></i></button>
+                                    <button class="edit-btn" onclick="event.stopPropagation(); app.showEditServiceModal('${service.id}')" title="编辑服务"><i class="fas fa-edit"></i></button>
                                     <button class="delete-btn" onclick="app.deleteService('${service.id}', event)" title="删除服务">🗑️</button>
                                 </div>
                             </div>
@@ -1032,21 +949,21 @@
                                     <li class="interface-item">
                                         <div class="interface-header" onclick="app.toggleInterface('${service.id}', '${iface.id}')" title="${iface.name}">
                                             <span style="display: flex; align-items: center;">
-                                                <span class="interface-collapse-icon" id="interface-icon-${service.id}-${iface.id}">▶</span>
-                                                📁 ${this.getShortInterfaceName(iface.name)}
+                                                <span class="interface-collapse-icon" id="interface-icon-${service.id}-${iface.id}"><i class="fas fa-chevron-right"></i></span>
+                                                <i class="fas fa-folder"></i> ${this.getShortInterfaceName(iface.name)}
                                             </span>
                                             <div class="interface-actions">
-                                                <button class="add-btn" onclick="event.stopPropagation(); app.showAddMethodModal('${service.id}', '${iface.id}')" title="添加方法">➕</button>
-                                                <button class="edit-btn" onclick="event.stopPropagation(); app.showEditInterfaceModal('${service.id}', '${iface.id}')" title="编辑接口">✏️</button>
+                                                <button class="add-btn" onclick="event.stopPropagation(); app.showAddMethodModal('${service.id}', '${iface.id}')" title="添加方法"><i class="fas fa-plus"></i></button>
+                                                <button class="edit-btn" onclick="event.stopPropagation(); app.showEditInterfaceModal('${service.id}', '${iface.id}')" title="编辑接口"><i class="fas fa-edit"></i></button>
                                                 <button class="delete-btn" onclick="app.deleteInterface('${service.id}', '${iface.id}', event)" title="删除接口">🗑️</button>
                                             </div>
                                         </div>
                                         <ul class="methods" id="methods-${service.id}-${iface.id}">
                                             ${iface.methods.map(method => `
                                                 <li class="method-item" onclick="app.selectMethod('${service.id}', '${iface.id}', '${method.id}')">
-                                                    <span>⚡ ${method.name}</span>
+                                                    <span><i class="fas fa-bolt"></i> ${method.name}</span>
                                                     <div class="interface-actions">
-                                                        <button class="edit-btn" onclick="event.stopPropagation(); app.showEditMethodModal('${service.id}', '${iface.id}', '${method.id}')" title="编辑方法">✏️</button>
+                                                        <button class="edit-btn" onclick="event.stopPropagation(); app.showEditMethodModal('${service.id}', '${iface.id}', '${method.id}')" title="编辑方法"><i class="fas fa-edit"></i></button>
                                                         <button class="delete-btn" onclick="app.deleteMethod('${service.id}', '${iface.id}', '${method.id}', event)" title="删除方法">🗑️</button>
                                                     </div>
                                                 </li>
@@ -1069,12 +986,12 @@
 
             selectMethod(serviceId, interfaceId, methodId) {
                 // 移除之前的选中状态
-                document.querySelectorAll('.method-item.active').forEach(el => {
-                    el.classList.remove('active');
+                document.querySelectorAll('.method-item.is-active').forEach(el => {
+                    el.classList.remove('is-active');
                 });
 
                 // 添加当前选中状态
-                event.target.closest('.method-item').classList.add('active');
+                event.target.closest('.method-item').classList.add('is-active');
 
                 const service = this.services.find(s => s.id === serviceId);
                 const iface = service.interfaces.find(i => i.id === interfaceId);
@@ -1094,11 +1011,11 @@
 
             showTestPanel() {
                 document.getElementById('welcome-panel').style.display = 'none';
-                document.getElementById('test-panel').classList.add('active');
+                document.getElementById('test-panel').classList.add('is-active');
 
                 const { service, interface: iface, method } = this.currentMethod;
 
-                document.getElementById('method-title').textContent = `🧪 测试: ${method.name}`;
+                document.getElementById('method-title').textContent = `测试: ${method.name}`;
                 document.getElementById('interface-name').value = iface.name; // 显示完整接口名
                 document.getElementById('method-name').value = method.name;
                 document.getElementById('params-input').value = method.params;
@@ -1201,7 +1118,7 @@
                     const result = document.getElementById('result-panel') || document.createElement('div');
                     result.style.display = 'block';
                     result.innerHTML = `
-                        <div class="result-header">🔍 连接测试</div>
+                        <div class="result-header"><i class="fas fa-search"></i> 连接测试</div>
                         <div class="result-content loading">正在测试连接到 ${service.dubbo_config.host}:${service.dubbo_config.port}...</div>
                     `;
                     
@@ -1224,10 +1141,10 @@
                         const testResult = data.data;
                         if (testResult.success) {
                             result.innerHTML = `
-                                <div class="result-header">🔍 连接测试结果</div>
+                                <div class="result-header"><i class="fas fa-search"></i> 连接测试结果</div>
                                 <div class="result-content success">
-✅ ${testResult.message}
-⏱️ 响应时间: ${testResult.elapsed}ms
+<i class="fas fa-check text-success"></i> ${testResult.message}
+<i class="fas fa-clock"></i> 响应时间: ${testResult.elapsed}ms
 🌐 地址: ${service.dubbo_config.host}:${service.dubbo_config.port}
 
 💡 连接正常，可以进行接口调用测试
@@ -1235,9 +1152,9 @@
                             `;
                         } else {
                             result.innerHTML = `
-                                <div class="result-header">🔍 连接测试结果</div>
+                                <div class="result-header"><i class="fas fa-search"></i> 连接测试结果</div>
                                 <div class="result-content error">
-❌ 连接失败: ${testResult.error}
+<i class="fas fa-times text-danger"></i> 连接失败: ${testResult.error}
 🌐 地址: ${service.dubbo_config.host}:${service.dubbo_config.port}
 📋 错误代码: ${testResult.errorCode || '未知'}
 
@@ -1251,16 +1168,16 @@
                         }
                     } else {
                         result.innerHTML = `
-                            <div class="result-header">🔍 连接测试结果</div>
-                            <div class="result-content error">❌ 测试失败: ${data.error}</div>
+                            <div class="result-header"><i class="fas fa-search"></i> 连接测试结果</div>
+                            <div class="result-content error"><i class="fas fa-times text-danger"></i> 测试失败: ${data.error}</div>
                         `;
                     }
                 } catch (error) {
                     const result = document.getElementById('result-panel');
                     if (result) {
                         result.innerHTML = `
-                            <div class="result-header">🔍 连接测试结果</div>
-                            <div class="result-content error">❌ 网络错误: ${error.message}</div>
+                            <div class="result-header"><i class="fas fa-search"></i> 连接测试结果</div>
+                            <div class="result-content error"><i class="fas fa-times text-danger"></i> 网络错误: ${error.message}</div>
                         `;
                     }
                 }
@@ -1273,12 +1190,12 @@
                 
                 if (interfacesContainer.classList.contains('expanded')) {
                     interfacesContainer.classList.remove('expanded');
-                    icon.textContent = '▶';
+                    icon.innerHTML = '<i class="fas fa-chevron-right"></i>';
                     icon.classList.remove('expanded');
                     this.collapsedStates.services[serviceId] = false;
                 } else {
                     interfacesContainer.classList.add('expanded');
-                    icon.textContent = '▼';
+                    icon.innerHTML = '<i class="fas fa-chevron-down"></i>';
                     icon.classList.add('expanded');
                     this.collapsedStates.services[serviceId] = true;
                 }
@@ -1293,12 +1210,12 @@
                 
                 if (methodsContainer.classList.contains('expanded')) {
                     methodsContainer.classList.remove('expanded');
-                    icon.textContent = '▶';
+                    icon.innerHTML = '<i class="fas fa-chevron-right"></i>';
                     icon.classList.remove('expanded');
                     this.collapsedStates.interfaces[`${serviceId}-${interfaceId}`] = false;
                 } else {
                     methodsContainer.classList.add('expanded');
-                    icon.textContent = '▼';
+                    icon.innerHTML = '<i class="fas fa-chevron-down"></i>';
                     icon.classList.add('expanded');
                     this.collapsedStates.interfaces[`${serviceId}-${interfaceId}`] = true;
                 }
@@ -1329,11 +1246,11 @@
                     if (interfacesContainer && icon) {
                         if (this.collapsedStates.services[serviceId]) {
                             interfacesContainer.classList.add('expanded');
-                            icon.textContent = '▼';
+                            icon.innerHTML = '<i class="fas fa-chevron-down"></i>';
                             icon.classList.add('expanded');
                         } else {
                             interfacesContainer.classList.remove('expanded');
-                            icon.textContent = '▶';
+                            icon.innerHTML = '<i class="fas fa-chevron-right"></i>';
                             icon.classList.remove('expanded');
                         }
                     }
@@ -1347,11 +1264,11 @@
                     if (methodsContainer && icon) {
                         if (this.collapsedStates.interfaces[key]) {
                             methodsContainer.classList.add('expanded');
-                            icon.textContent = '▼';
+                            icon.innerHTML = '<i class="fas fa-chevron-down"></i>';
                             icon.classList.add('expanded');
                         } else {
                             methodsContainer.classList.remove('expanded');
-                            icon.textContent = '▶';
+                            icon.innerHTML = '<i class="fas fa-chevron-right"></i>';
                             icon.classList.remove('expanded');
                         }
                     }
