@@ -532,7 +532,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="params-input">请求参数 (JSON格式)</label>
+                        <label for="params-input">请求参数 (JSON格式) <button id="format-json-btn" class="btn btn-sm btn-secondary" style="margin-left: 10px;">🎨 格式化JSON</button></label>
                         <textarea id="params-input" class="form-control" placeholder='{"userId": "123"}'></textarea>
                     </div>
 
@@ -613,7 +613,7 @@
                            placeholder="getUserInfo">
                 </div>
                 <div class="form-group">
-                    <label for="method-params">默认参数(JSON格式)</label>
+                    <label for="method-params">默认参数(JSON格式) <button id="format-method-json-btn" class="btn btn-sm btn-secondary" style="margin-left: 10px;">🎨 格式化JSON</button></label>
                     <textarea id="method-params" class="form-control" 
                               placeholder='{"userId": "123"}'>{}</textarea>
                 </div>
@@ -671,6 +671,14 @@
             initEventListeners() {
                 document.getElementById('test-btn').addEventListener('click', () => {
                     this.testMethod();
+                });
+
+                document.getElementById('format-json-btn').addEventListener('click', () => {
+                    this.formatJsonParams();
+                });
+
+                document.getElementById('format-method-json-btn').addEventListener('click', () => {
+                    this.formatMethodJsonParams();
                 });
 
                 // Close modals when clicking outside
@@ -1113,6 +1121,44 @@
                     methodId: this.currentMethod.methodId,
                     params: params
                 });
+            }
+
+            formatJsonParams() {
+                const paramsInput = document.getElementById('params-input');
+                const currentValue = paramsInput.value.trim();
+                
+                if (!currentValue) {
+                    alert('请先输入JSON内容');
+                    return;
+                }
+
+                try {
+                    // Parse and format JSON
+                    const parsed = JSON.parse(currentValue);
+                    const formatted = JSON.stringify(parsed, null, 2);
+                    paramsInput.value = formatted;
+                } catch (error) {
+                    alert('JSON格式错误: ' + error.message);
+                }
+            }
+
+            formatMethodJsonParams() {
+                const paramsInput = document.getElementById('method-params');
+                const currentValue = paramsInput.value.trim();
+                
+                if (!currentValue) {
+                    alert('请先输入JSON内容');
+                    return;
+                }
+
+                try {
+                    // Parse and format JSON
+                    const parsed = JSON.parse(currentValue);
+                    const formatted = JSON.stringify(parsed, null, 2);
+                    paramsInput.value = formatted;
+                } catch (error) {
+                    alert('JSON格式错误: ' + error.message);
+                }
             }
 
             showLoading(message) {
