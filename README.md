@@ -36,10 +36,15 @@ start.bat
 ./start.sh
 ```
 
+**启动选项：**
+1. **仅启动Web服务**：需要连接真实的Dubbo服务
+2. **Web服务 + 模拟Dubbo服务**：自动启动模拟服务，无需真实Dubbo环境
+
 **启动脚本功能：**
 - 🔍 自动检测Node.js环境
 - 📦 首次运行时自动安装依赖
 - 📋 自动加载示例数据（如果存在）
+- 🎭 可选启动模拟Dubbo服务
 - 🚀 一键启动Web服务
 - 💡 显示详细的访问信息和使用提示
 
@@ -64,6 +69,19 @@ npm start
 npm run dev  # 使用nodemon自动重启
 ```
 
+### 模拟服务启动
+
+```bash
+# 启动单个模拟Dubbo服务
+npm run mock-server
+
+# 启动多个模拟服务 (端口20880,20881,20882)
+npm run mock-multi
+
+# 同时启动Web服务和模拟服务
+npm run dev-with-mock
+```
+
 ### 环境变量配置
 
 ```bash
@@ -85,11 +103,14 @@ dubbo-test-tool-nodejs/
 ├── interfaces.json           # 数据文件（自动生成）
 ├── src/
 │   ├── web-server.js        # Web服务器主程序
+│   ├── mock-dubbo-server.js # 模拟Dubbo服务器
 │   ├── core/
 │   │   ├── data-manager.js  # 数据管理核心
 │   │   └── dubbo-client.js  # Dubbo客户端实现
 │   └── public/
 │       └── index.html       # Web界面
+├── QUICKSTART.md           # 快速使用指南
+├── TROUBLESHOOTING.md      # 故障排除指南
 └── README.md               # 说明文档
 ```
 
@@ -131,8 +152,10 @@ dubbo-test-tool-nodejs/
 ### 接口测试面板
 - **参数编辑器**：JSON格式参数编辑，支持语法高亮
 - **一键测试**：点击"🧪 测试接口"按钮执行调用
+- **连接测试**：点击"🔍"按钮测试TCP连接状态
 - **实时结果展示**：JSON格式化显示响应结果
 - **错误信息显示**：网络错误和调用错误的详细提示
+- **调试信息**：服务端控制台显示详细的调用日志
 
 ## 📊 示例数据
 
@@ -148,15 +171,60 @@ dubbo-test-tool-nodejs/
 ### 支付服务 (PaymentService) - 端口20882
 - **支付处理接口**：创建支付、处理支付、退款处理
 
-使用示例数据：
+### 使用示例数据
+
+**自动加载（推荐）：**
 ```bash
-# 自动加载（使用启动脚本会自动处理）
+# 启动脚本会自动处理示例数据
 start.bat          # Windows
 ./start.sh          # Linux/macOS
+```
 
-# 手动复制
+**手动复制：**
+```bash
 cp demo-interfaces.json interfaces.json        # Linux/macOS
 copy demo-interfaces.json interfaces.json      # Windows
+```
+
+## 🎭 模拟Dubbo服务
+
+为了解决"没有真实Dubbo服务"的问题，项目提供了内置的模拟Dubbo服务：
+
+### 功能特点
+- **完全兼容**：实现标准Dubbo协议，与测试工具完美配合
+- **智能响应**：根据接口和方法返回相应的模拟数据
+- **多端口支持**：可同时在多个端口运行
+- **详细日志**：显示完整的请求响应过程
+
+### 启动方式
+```bash
+# 方式1: 使用启动脚本（推荐）
+start.bat           # Windows - 选择选项2
+./start.sh          # Linux/macOS - 选择选项2
+
+# 方式2: 手动启动
+npm run mock-server              # 单个服务(20880)
+npm run mock-multi               # 多个服务(20880,20881,20882)
+npm run dev-with-mock           # Web服务+模拟服务
+```
+
+### 模拟数据示例
+模拟服务会根据调用的接口方法返回相应的示例数据：
+
+```json
+// getUserInfo响应示例
+{
+  "success": true,
+  "data": {
+    "userId": "123456",
+    "name": "张三", 
+    "email": "zhangsan@example.com",
+    "phone": "13800138000",
+    "createTime": "2024-01-01T00:00:00Z",
+    "status": "ACTIVE"
+  },
+  "message": "获取用户信息成功"
+}
 ```
 
 ## 🔌 API接口
@@ -181,6 +249,7 @@ Web服务器提供以下REST API：
 
 ### 测试调用
 - `POST /api/test-method` - 测试方法调用
+- `POST /api/test-connection` - 测试服务连接
 
 ## 🚦 技术实现
 
@@ -189,6 +258,8 @@ Web服务器提供以下REST API：
 - **协议支持**：实现简化版Dubbo协议（建议生产环境使用成熟库）
 - **错误处理**：完善的连接超时和错误处理机制
 - **参数解析**：支持JSON格式参数自动转换
+- **连接诊断**：提供TCP连接测试功能
+- **调试日志**：详细的调用过程日志记录
 
 ### Web服务器
 - **Express.js**：RESTful API服务
@@ -256,6 +327,23 @@ CMD ["npm", "start"]
 - 导入/导出配置功能
 - 接口性能监控
 - 自动化测试脚本
+
+## 🆘 故障排除
+
+### 常见问题
+遇到连接超时、调用失败等问题时，请参考详细的故障排除指南：
+- 📖 [故障排除指南](TROUBLESHOOTING.md)
+- 🔍 使用连接测试功能诊断网络问题
+- 📋 查看服务端控制台的详细调试日志
+
+### 快速诊断
+1. **连接测试**：点击服务旁的🔍按钮测试TCP连接
+2. **检查日志**：观察服务端控制台的调试信息
+3. **验证配置**：确认服务地址、端口、超时设置
+4. **网络检查**：使用telnet或nc命令测试端口连通性
+
+### 协议兼容性
+本工具使用简化版Dubbo协议，可能与某些版本不完全兼容。生产环境建议使用成熟的Node.js Dubbo客户端库。
 
 ## 📄 许可证
 

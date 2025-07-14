@@ -74,17 +74,46 @@ if [ -z "$PORT" ]; then
     PORT=3000
 fi
 
-echo -e "${GREEN}🚀 正在启动Dubbo测试工具...${NC}"
-echo -e "📱 访问地址: http://localhost:$PORT"
-echo -e "🛠️  API端点: http://localhost:$PORT/api"
+echo -e "${BLUE}🎭 启动选项:${NC}"
+echo "1. 仅启动Web服务 (需要真实Dubbo服务)"
+echo "2. 启动Web服务 + 模拟Dubbo服务 (推荐用于测试)"
 echo
-echo -e "${YELLOW}⚠️  注意: 请保持此终端打开以维持服务运行${NC}"
-echo -e "💡 按 Ctrl+C 可停止服务"
-echo -e "${BLUE}========================================${NC}"
-echo
+read -p "请选择 (1/2) [默认:2]: " choice
+choice=${choice:-2}
 
-# 启动服务
-npm start
+if [ "$choice" = "1" ]; then
+    echo
+    echo -e "${GREEN}🚀 正在启动Dubbo测试工具...${NC}"
+    echo -e "📱 访问地址: http://localhost:$PORT"
+    echo -e "🛠️  API端点: http://localhost:$PORT/api"
+    echo
+    echo -e "${YELLOW}⚠️  注意: 请确保目标Dubbo服务已启动${NC}"
+    echo -e "💡 按 Ctrl+C 可停止服务"
+    echo -e "${BLUE}========================================${NC}"
+    echo
+    npm start
+else
+    echo
+    echo -e "${GREEN}🚀 正在启动Dubbo测试工具 + 模拟服务...${NC}"
+    echo -e "📱 访问地址: http://localhost:$PORT"
+    echo -e "🛠️  API端点: http://localhost:$PORT/api"
+    echo -e "🎭 模拟Dubbo服务: 20880, 20881, 20882"
+    echo
+    echo -e "${YELLOW}⚠️  注意: 请保持此终端打开以维持服务运行${NC}"
+    echo -e "💡 按 Ctrl+C 可停止所有服务"
+    echo -e "🎯 模拟服务将返回示例响应数据"
+    echo -e "${BLUE}========================================${NC}"
+    echo
+    
+    # 检查是否安装了concurrently
+    if ! npm list concurrently &> /dev/null; then
+        echo -e "${YELLOW}📦 安装并发运行工具...${NC}"
+        npm install concurrently --save-dev
+    fi
+    
+    # 启动Web服务和模拟Dubbo服务
+    npm run dev-with-mock
+fi
 
 # 如果服务意外停止
 echo

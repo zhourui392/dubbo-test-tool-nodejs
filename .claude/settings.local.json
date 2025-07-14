@@ -6,7 +6,19 @@
       "Bash(git commit:*)",
       "Bash(npm start)",
       "Bash(chmod:*)",
-      "Bash(start.bat)"
+      "Bash(start.bat)",
+      "Bash(npm run dev-with-mock:*)",
+      "Bash(PORT=3001 npm start)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)",
+      "Bash(node:*)",
+      "Bash(cmd //c:*)",
+      "Bash(npm run dev:*)",
+      "Bash(cmd /c:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(npm view:*)",
+      "Bash(npm run mock-server:*)",
+      "Bash(MOCK_PORT=28880 node src/mock-dubbo-server.js)"
     ],
     "deny": []
   }

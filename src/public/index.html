@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dubbo接口测试工具</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 10px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .content-area {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .service-tree {
+            list-style: none;
+        }
+
+        .service-item {
+            margin-bottom: 15px;
+        }
+
+        .service-header {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .collapse-icon {
+            font-size: 12px;
+            margin-right: 8px;
+            transition: transform 0.3s ease;
+            color: #6c757d;
+        }
+
+        .collapse-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        .service-header:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .service-header.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .service-name {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .service-config {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .service-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .interfaces {
+            margin-top: 10px;
+            margin-left: 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .interfaces.expanded {
+            max-height: 2000px;
+        }
+
+        .interface-item {
+            margin-bottom: 10px;
+        }
+
+        .interface-header {
+            background: #fff3cd;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #ffeaa7;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .interface-header span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .interface-collapse-icon {
+            font-size: 10px;
+            margin-right: 6px;
+            transition: transform 0.3s ease;
+            color: #856404;
+            flex-shrink: 0;
+        }
+
+        .interface-collapse-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        .interface-header:hover {
+            background: #fff3cd;
+            border-color: #fdcb6e;
+        }
+
+        .interface-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .action-btn:hover {
+            background: #5a6268;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .edit-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #218838;
+        }
+
+        .add-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .add-btn:hover {
+            background: #0056b3;
+        }
+
+        .methods {
+            margin-top: 8px;
+            margin-left: 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .methods.expanded {
+            max-height: 1000px;
+        }
+
+        .method-item {
+            padding: 6px 12px;
+            background: #f1f3f4;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .method-item:hover {
+            background: #e8f0fe;
+            border-color: #4285f4;
+        }
+
+        .method-item.active {
+            background: #4285f4;
+            color: white;
+        }
+
+        .test-panel {
+            display: none;
+        }
+
+        .test-panel.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .result-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .result-header {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .result-content {
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            white-space: pre-wrap;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-style: italic;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        .config-info {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+
+        .btn-confirm {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background: #0056b3;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 300px 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Dubbo接口测试工具</h1>
+            <p>Node.js版本 - 支持Dubbo RPC接口测试</p>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="toolbar">
+                    <button class="btn btn-secondary btn-sm" onclick="app.showAddServiceModal()">➕ 添加服务</button>
+                    <button class="btn btn-secondary btn-sm" onclick="app.refreshServices()">🔄 刷新</button>
+                </div>
+                
+                <h3 style="margin-bottom: 20px; color: #495057;">📋 服务列表</h3>
+                <ul id="service-tree" class="service-tree">
+                    <li class="empty-state">正在加载服务...</li>
+                </ul>
+            </div>
+
+            <div class="content-area">
+                <div id="welcome-panel">
+                    <div class="empty-state">
+                        <h3>👋 欢迎使用Dubbo测试工具</h3>
+                        <p>请从左侧选择要测试的方法</p>
+                        <br>
+                        <p>💡 使用说明：</p>
+                        <ul style="text-align: left; display: inline-block;">
+                            <li>点击"➕ 添加服务"创建新服务</li>
+                            <li>点击"✏️"可编辑服务、接口或方法</li>
+                            <li>点击"🗑️"可删除服务、接口或方法</li>
+                            <li>点击"➕"可添加接口或方法</li>
+                            <li>选择方法后可直接测试Dubbo接口</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="test-panel" class="test-panel">
+                    <h3 id="method-title">方法测试</h3>
+                    
+                    <div class="form-group">
+                        <label for="interface-name">接口名称</label>
+                        <input type="text" id="interface-name" class="form-control" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="method-name">方法名称</label>
+                        <input type="text" id="method-name" class="form-control" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="params-input">请求参数 (JSON格式)</label>
+                        <textarea id="params-input" class="form-control" placeholder='{"userId": "123"}'></textarea>
+                    </div>
+
+                    <button id="test-btn" class="btn btn-primary">🧪 测试接口</button>
+
+                    <div id="result-panel" class="result-panel" style="display: none;">
+                        <div class="result-header">📋 响应结果</div>
+                        <div id="result-content" class="result-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Modal -->
+    <div id="service-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="service-modal-title">添加服务</div>
+            <form id="service-form">
+                <div class="form-group">
+                    <label for="service-name">服务名称</label>
+                    <input type="text" id="service-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="service-host">主机地址</label>
+                    <input type="text" id="service-host" class="form-control" value="127.0.0.1" required>
+                </div>
+                <div class="form-group">
+                    <label for="service-port">端口号</label>
+                    <input type="number" id="service-port" class="form-control" value="20880" required>
+                </div>
+                <div class="form-group">
+                    <label for="service-timeout">超时时间(ms)</label>
+                    <input type="number" id="service-timeout" class="form-control" value="5000" required>
+                </div>
+                <div class="form-group">
+                    <label for="service-version">版本号(可选)</label>
+                    <input type="text" id="service-version" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="service-group">分组(可选)</label>
+                    <input type="text" id="service-group" class="form-control">
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="app.hideServiceModal()">取消</button>
+                <button class="btn btn-confirm" onclick="app.saveService()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interface Modal -->
+    <div id="interface-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="interface-modal-title">添加接口</div>
+            <form id="interface-form">
+                <div class="form-group">
+                    <label for="interface-name-input">接口名称</label>
+                    <input type="text" id="interface-name-input" class="form-control" required 
+                           placeholder="com.example.UserService">
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="app.hideInterfaceModal()">取消</button>
+                <button class="btn btn-confirm" onclick="app.saveInterface()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Method Modal -->
+    <div id="method-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="method-modal-title">添加方法</div>
+            <form id="method-form">
+                <div class="form-group">
+                    <label for="method-name-input">方法名称</label>
+                    <input type="text" id="method-name-input" class="form-control" required 
+                           placeholder="getUserInfo">
+                </div>
+                <div class="form-group">
+                    <label for="method-params">默认参数(JSON格式)</label>
+                    <textarea id="method-params" class="form-control" 
+                              placeholder='{"userId": "123"}'>{}</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="method-return-type">返回类型(可选)</label>
+                    <input type="text" id="method-return-type" class="form-control" 
+                           placeholder="UserDTO">
+                </div>
+                <div class="form-group">
+                    <label for="method-description">方法描述(可选)</label>
+                    <input type="text" id="method-description" class="form-control" 
+                           placeholder="获取用户信息">
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="app.hideMethodModal()">取消</button>
+                <button class="btn btn-confirm" onclick="app.saveMethod()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DubboTestUI {
+            constructor() {
+                this.socket = io();
+                this.currentMethod = null;
+                this.services = [];
+                this.editingService = null;
+                this.editingInterface = null;
+                this.editingMethod = null;
+                this.collapsedStates = {
+                    services: {},
+                    interfaces: {}
+                };
+                
+                this.loadCollapsedStates();
+                this.initEventListeners();
+                this.initSocketListeners();
+                this.loadServices();
+            }
+
+            // 从完整接口名提取简短显示名
+            getShortInterfaceName(fullName) {
+                if (!fullName) return fullName;
+                
+                // 如果是完整的类名（包含包名），提取类名
+                const parts = fullName.split('.');
+                if (parts.length > 1) {
+                    return parts[parts.length - 1]; // 返回最后一部分（类名）
+                }
+                
+                return fullName; // 如果不包含包名，直接返回
+            }
+
+            initEventListeners() {
+                document.getElementById('test-btn').addEventListener('click', () => {
+                    this.testMethod();
+                });
+
+                // Close modals when clicking outside
+                window.addEventListener('click', (event) => {
+                    if (event.target.classList.contains('modal')) {
+                        this.hideAllModals();
+                    }
+                });
+            }
+
+            initSocketListeners() {
+                this.socket.on('services-data', (response) => {
+                    if (response.success) {
+                        this.services = response.data;
+                        this.renderServices();
+                    } else {
+                        this.showError('加载服务失败: ' + response.error);
+                    }
+                });
+
+                this.socket.on('test-start', (data) => {
+                    this.showLoading(data.message);
+                });
+
+                this.socket.on('test-result', (response) => {
+                    if (response.success) {
+                        this.showResult(response.data, 'success');
+                    } else {
+                        this.showResult(response.error, 'error');
+                    }
+                });
+            }
+
+            loadServices() {
+                this.socket.emit('get-services');
+            }
+
+            refreshServices() {
+                this.loadServices();
+            }
+
+            // Service Modal Methods
+            showAddServiceModal() {
+                this.editingService = null;
+                document.getElementById('service-modal-title').textContent = '添加服务';
+                document.getElementById('service-form').reset();
+                document.getElementById('service-modal').classList.add('show');
+            }
+
+            showEditServiceModal(serviceId) {
+                const service = this.services.find(s => s.id === serviceId);
+                if (!service) return;
+
+                this.editingService = service;
+                document.getElementById('service-modal-title').textContent = '编辑服务';
+                document.getElementById('service-name').value = service.name;
+                document.getElementById('service-host').value = service.dubbo_config.host;
+                document.getElementById('service-port').value = service.dubbo_config.port;
+                document.getElementById('service-timeout').value = service.dubbo_config.timeout;
+                document.getElementById('service-version').value = service.dubbo_config.version || '';
+                document.getElementById('service-group').value = service.dubbo_config.group || '';
+                document.getElementById('service-modal').classList.add('show');
+            }
+
+            hideServiceModal() {
+                document.getElementById('service-modal').classList.remove('show');
+                this.editingService = null;
+            }
+
+            async saveService() {
+                const name = document.getElementById('service-name').value.trim();
+                const host = document.getElementById('service-host').value.trim();
+                const port = parseInt(document.getElementById('service-port').value);
+                const timeout = parseInt(document.getElementById('service-timeout').value);
+                const version = document.getElementById('service-version').value.trim();
+                const group = document.getElementById('service-group').value.trim();
+
+                if (!name || !host || !port || !timeout) {
+                    alert('请填写必要字段');
+                    return;
+                }
+
+                try {
+                    const data = {
+                        name,
+                        dubboConfig: { host, port, timeout, version, group }
+                    };
+
+                    let response;
+                    if (this.editingService) {
+                        // Update service
+                        response = await fetch(`/api/services/${this.editingService.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                    } else {
+                        // Add service
+                        response = await fetch('/api/services', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                    }
+
+                    if (response.ok) {
+                        alert(this.editingService ? '服务更新成功！' : '服务添加成功！');
+                        this.hideServiceModal();
+                        this.loadServices();
+                    } else {
+                        alert('操作失败！');
+                    }
+                } catch (error) {
+                    alert('操作失败: ' + error.message);
+                }
+            }
+
+            // Interface Modal Methods
+            showAddInterfaceModal(serviceId) {
+                this.editingInterface = { serviceId };
+                document.getElementById('interface-modal-title').textContent = '添加接口';
+                document.getElementById('interface-form').reset();
+                document.getElementById('interface-modal').classList.add('show');
+            }
+
+            showEditInterfaceModal(serviceId, interfaceId) {
+                const service = this.services.find(s => s.id === serviceId);
+                const iface = service.interfaces.find(i => i.id === interfaceId);
+                if (!iface) return;
+
+                this.editingInterface = { serviceId, interfaceId, interface: iface };
+                document.getElementById('interface-modal-title').textContent = '编辑接口';
+                document.getElementById('interface-name-input').value = iface.name; // 显示完整接口名用于编辑
+                document.getElementById('interface-modal').classList.add('show');
+            }
+
+            hideInterfaceModal() {
+                document.getElementById('interface-modal').classList.remove('show');
+                this.editingInterface = null;
+            }
+
+            async saveInterface() {
+                const name = document.getElementById('interface-name-input').value.trim();
+
+                if (!name) {
+                    alert('请输入接口名称');
+                    return;
+                }
+
+                try {
+                    let response;
+                    if (this.editingInterface.interfaceId) {
+                        // Update interface
+                        response = await fetch(`/api/services/${this.editingInterface.serviceId}/interfaces/${this.editingInterface.interfaceId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name })
+                        });
+                    } else {
+                        // Add interface
+                        response = await fetch(`/api/services/${this.editingInterface.serviceId}/interfaces`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name })
+                        });
+                    }
+
+                    if (response.ok) {
+                        alert(this.editingInterface.interfaceId ? '接口更新成功！' : '接口添加成功！');
+                        this.hideInterfaceModal();
+                        this.loadServices();
+                    } else {
+                        alert('操作失败！');
+                    }
+                } catch (error) {
+                    alert('操作失败: ' + error.message);
+                }
+            }
+
+            // Method Modal Methods
+            showAddMethodModal(serviceId, interfaceId) {
+                this.editingMethod = { serviceId, interfaceId };
+                document.getElementById('method-modal-title').textContent = '添加方法';
+                document.getElementById('method-form').reset();
+                document.getElementById('method-params').value = '{}';
+                document.getElementById('method-modal').classList.add('show');
+            }
+
+            showEditMethodModal(serviceId, interfaceId, methodId) {
+                const service = this.services.find(s => s.id === serviceId);
+                const iface = service.interfaces.find(i => i.id === interfaceId);
+                const method = iface.methods.find(m => m.id === methodId);
+                if (!method) return;
+
+                this.editingMethod = { serviceId, interfaceId, methodId, method };
+                document.getElementById('method-modal-title').textContent = '编辑方法';
+                document.getElementById('method-name-input').value = method.name;
+                document.getElementById('method-params').value = method.params;
+                document.getElementById('method-return-type').value = method.return_type || '';
+                document.getElementById('method-description').value = method.description || '';
+                document.getElementById('method-modal').classList.add('show');
+            }
+
+            hideMethodModal() {
+                document.getElementById('method-modal').classList.remove('show');
+                this.editingMethod = null;
+            }
+
+            async saveMethod() {
+                const name = document.getElementById('method-name-input').value.trim();
+                const params = document.getElementById('method-params').value.trim();
+                const returnType = document.getElementById('method-return-type').value.trim();
+                const description = document.getElementById('method-description').value.trim();
+
+                if (!name) {
+                    alert('请输入方法名称');
+                    return;
+                }
+
+                try {
+                    const data = { name, params, returnType, description };
+
+                    let response;
+                    if (this.editingMethod.methodId) {
+                        // Update method
+                        response = await fetch(`/api/services/${this.editingMethod.serviceId}/interfaces/${this.editingMethod.interfaceId}/methods/${this.editingMethod.methodId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                    } else {
+                        // Add method
+                        response = await fetch(`/api/services/${this.editingMethod.serviceId}/interfaces/${this.editingMethod.interfaceId}/methods`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                    }
+
+                    if (response.ok) {
+                        alert(this.editingMethod.methodId ? '方法更新成功！' : '方法添加成功！');
+                        this.hideMethodModal();
+                        this.loadServices();
+                    } else {
+                        alert('操作失败！');
+                    }
+                } catch (error) {
+                    alert('操作失败: ' + error.message);
+                }
+            }
+
+            hideAllModals() {
+                this.hideServiceModal();
+                this.hideInterfaceModal();
+                this.hideMethodModal();
+            }
+
+            // Delete Methods
+            async deleteService(serviceId, event) {
+                event.stopPropagation();
+                
+                if (!confirm('确定要删除这个服务吗？这将删除服务下的所有接口和方法。')) return;
+
+                try {
+                    const response = await fetch(`/api/services/${serviceId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        alert('服务删除成功！');
+                        this.loadServices();
+                    } else {
+                        alert('服务删除失败！');
+                    }
+                } catch (error) {
+                    alert('服务删除失败: ' + error.message);
+                }
+            }
+
+            async deleteInterface(serviceId, interfaceId, event) {
+                event.stopPropagation();
+                
+                if (!confirm('确定要删除这个接口吗？')) return;
+
+                try {
+                    const response = await fetch(`/api/services/${serviceId}/interfaces/${interfaceId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        alert('接口删除成功！');
+                        this.loadServices();
+                    } else {
+                        alert('接口删除失败！');
+                    }
+                } catch (error) {
+                    alert('接口删除失败: ' + error.message);
+                }
+            }
+
+            async deleteMethod(serviceId, interfaceId, methodId, event) {
+                event.stopPropagation();
+                
+                if (!confirm('确定要删除这个方法吗？')) return;
+
+                try {
+                    const response = await fetch(`/api/services/${serviceId}/interfaces/${interfaceId}/methods/${methodId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        alert('方法删除成功！');
+                        this.loadServices();
+                    } else {
+                        alert('方法删除失败！');
+                    }
+                } catch (error) {
+                    alert('方法删除失败: ' + error.message);
+                }
+            }
+
+            renderServices() {
+                const serviceTree = document.getElementById('service-tree');
+                
+                if (this.services.length === 0) {
+                    serviceTree.innerHTML = '<li class="empty-state">暂无服务，请点击"➕ 添加服务"</li>';
+                    return;
+                }
+
+                let html = '';
+                this.services.forEach(service => {
+                    html += `
+                        <li class="service-item">
+                            <div class="service-header" onclick="app.toggleService('${service.id}')">
+                                <div style="display: flex; align-items: center;">
+                                    <span class="collapse-icon" id="service-icon-${service.id}">▶</span>
+                                    <div>
+                                        <div class="service-name">${service.name}</div>
+                                        <div class="config-info">${service.dubbo_config.host}:${service.dubbo_config.port}</div>
+                                    </div>
+                                </div>
+                                <div class="service-actions">
+                                    <button class="action-btn" onclick="event.stopPropagation(); app.testConnection('${service.id}')" title="测试连接">🔍</button>
+                                    <button class="add-btn" onclick="event.stopPropagation(); app.showAddInterfaceModal('${service.id}')" title="添加接口">➕</button>
+                                    <button class="edit-btn" onclick="event.stopPropagation(); app.showEditServiceModal('${service.id}')" title="编辑服务">✏️</button>
+                                    <button class="delete-btn" onclick="app.deleteService('${service.id}', event)" title="删除服务">🗑️</button>
+                                </div>
+                            </div>
+                            <ul class="interfaces" id="interfaces-${service.id}">
+                                ${service.interfaces.map(iface => `
+                                    <li class="interface-item">
+                                        <div class="interface-header" onclick="app.toggleInterface('${service.id}', '${iface.id}')" title="${iface.name}">
+                                            <span style="display: flex; align-items: center;">
+                                                <span class="interface-collapse-icon" id="interface-icon-${service.id}-${iface.id}">▶</span>
+                                                📁 ${this.getShortInterfaceName(iface.name)}
+                                            </span>
+                                            <div class="interface-actions">
+                                                <button class="add-btn" onclick="event.stopPropagation(); app.showAddMethodModal('${service.id}', '${iface.id}')" title="添加方法">➕</button>
+                                                <button class="edit-btn" onclick="event.stopPropagation(); app.showEditInterfaceModal('${service.id}', '${iface.id}')" title="编辑接口">✏️</button>
+                                                <button class="delete-btn" onclick="app.deleteInterface('${service.id}', '${iface.id}', event)" title="删除接口">🗑️</button>
+                                            </div>
+                                        </div>
+                                        <ul class="methods" id="methods-${service.id}-${iface.id}">
+                                            ${iface.methods.map(method => `
+                                                <li class="method-item" onclick="app.selectMethod('${service.id}', '${iface.id}', '${method.id}')">
+                                                    <span>⚡ ${method.name}</span>
+                                                    <div class="interface-actions">
+                                                        <button class="edit-btn" onclick="event.stopPropagation(); app.showEditMethodModal('${service.id}', '${iface.id}', '${method.id}')" title="编辑方法">✏️</button>
+                                                        <button class="delete-btn" onclick="app.deleteMethod('${service.id}', '${iface.id}', '${method.id}', event)" title="删除方法">🗑️</button>
+                                                    </div>
+                                                </li>
+                                            `).join('')}
+                                        </ul>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </li>
+                    `;
+                });
+
+                serviceTree.innerHTML = html;
+                
+                // 应用之前保存的折叠状态
+                setTimeout(() => {
+                    this.applyCollapsedStates();
+                }, 50);
+            }
+
+            selectMethod(serviceId, interfaceId, methodId) {
+                // 移除之前的选中状态
+                document.querySelectorAll('.method-item.active').forEach(el => {
+                    el.classList.remove('active');
+                });
+
+                // 添加当前选中状态
+                event.target.closest('.method-item').classList.add('active');
+
+                const service = this.services.find(s => s.id === serviceId);
+                const iface = service.interfaces.find(i => i.id === interfaceId);
+                const method = iface.methods.find(m => m.id === methodId);
+
+                this.currentMethod = {
+                    serviceId,
+                    interfaceId,
+                    methodId,
+                    service,
+                    interface: iface,
+                    method
+                };
+
+                this.showTestPanel();
+            }
+
+            showTestPanel() {
+                document.getElementById('welcome-panel').style.display = 'none';
+                document.getElementById('test-panel').classList.add('active');
+
+                const { service, interface: iface, method } = this.currentMethod;
+
+                document.getElementById('method-title').textContent = `🧪 测试: ${method.name}`;
+                document.getElementById('interface-name').value = iface.name; // 显示完整接口名
+                document.getElementById('method-name').value = method.name;
+                document.getElementById('params-input').value = method.params;
+
+                // 隐藏之前的结果
+                document.getElementById('result-panel').style.display = 'none';
+            }
+
+            testMethod() {
+                if (!this.currentMethod) {
+                    alert('请先选择要测试的方法');
+                    return;
+                }
+
+                const params = document.getElementById('params-input').value;
+
+                this.socket.emit('test-method', {
+                    serviceId: this.currentMethod.serviceId,
+                    interfaceId: this.currentMethod.interfaceId,
+                    methodId: this.currentMethod.methodId,
+                    params: params
+                });
+            }
+
+            showLoading(message) {
+                const resultPanel = document.getElementById('result-panel');
+                const resultContent = document.getElementById('result-content');
+                
+                resultPanel.style.display = 'block';
+                resultContent.className = 'result-content loading';
+                resultContent.textContent = message;
+            }
+
+            showResult(data, type) {
+                const resultPanel = document.getElementById('result-panel');
+                const resultContent = document.getElementById('result-content');
+                
+                resultPanel.style.display = 'block';
+                resultContent.className = `result-content ${type}`;
+                
+                if (typeof data === 'object') {
+                    resultContent.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    resultContent.textContent = data;
+                }
+            }
+
+            showError(message) {
+                this.showResult(message, 'error');
+            }
+
+            // 测试连接
+            async testConnection(serviceId) {
+                const service = this.services.find(s => s.id === serviceId);
+                if (!service) {
+                    alert('未找到服务');
+                    return;
+                }
+
+                try {
+                    // 显示加载状态
+                    const result = document.getElementById('result-panel') || document.createElement('div');
+                    result.style.display = 'block';
+                    result.innerHTML = `
+                        <div class="result-header">🔍 连接测试</div>
+                        <div class="result-content loading">正在测试连接到 ${service.dubbo_config.host}:${service.dubbo_config.port}...</div>
+                    `;
+                    
+                    // 如果结果面板不存在，添加到页面
+                    if (!document.getElementById('result-panel')) {
+                        result.id = 'result-panel';
+                        result.className = 'result-panel';
+                        document.querySelector('.content-area').appendChild(result);
+                    }
+
+                    const response = await fetch('/api/test-connection', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ serviceId })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const testResult = data.data;
+                        if (testResult.success) {
+                            result.innerHTML = `
+                                <div class="result-header">🔍 连接测试结果</div>
+                                <div class="result-content success">
+✅ ${testResult.message}
+⏱️ 响应时间: ${testResult.elapsed}ms
+🌐 地址: ${service.dubbo_config.host}:${service.dubbo_config.port}
+
+💡 连接正常，可以进行接口调用测试
+                                </div>
+                            `;
+                        } else {
+                            result.innerHTML = `
+                                <div class="result-header">🔍 连接测试结果</div>
+                                <div class="result-content error">
+❌ 连接失败: ${testResult.error}
+🌐 地址: ${service.dubbo_config.host}:${service.dubbo_config.port}
+📋 错误代码: ${testResult.errorCode || '未知'}
+
+🔧 可能的解决方案:
+• 检查Dubbo服务是否已启动
+• 确认服务地址和端口是否正确
+• 检查网络连接和防火墙设置
+• 验证服务是否在指定端口监听
+                                </div>
+                            `;
+                        }
+                    } else {
+                        result.innerHTML = `
+                            <div class="result-header">🔍 连接测试结果</div>
+                            <div class="result-content error">❌ 测试失败: ${data.error}</div>
+                        `;
+                    }
+                } catch (error) {
+                    const result = document.getElementById('result-panel');
+                    if (result) {
+                        result.innerHTML = `
+                            <div class="result-header">🔍 连接测试结果</div>
+                            <div class="result-content error">❌ 网络错误: ${error.message}</div>
+                        `;
+                    }
+                }
+            }
+
+            // 切换服务折叠状态
+            toggleService(serviceId) {
+                const interfacesContainer = document.getElementById(`interfaces-${serviceId}`);
+                const icon = document.getElementById(`service-icon-${serviceId}`);
+                
+                if (interfacesContainer.classList.contains('expanded')) {
+                    interfacesContainer.classList.remove('expanded');
+                    icon.textContent = '▶';
+                    icon.classList.remove('expanded');
+                    this.collapsedStates.services[serviceId] = false;
+                } else {
+                    interfacesContainer.classList.add('expanded');
+                    icon.textContent = '▼';
+                    icon.classList.add('expanded');
+                    this.collapsedStates.services[serviceId] = true;
+                }
+                
+                this.saveCollapsedStates();
+            }
+
+            // 切换接口折叠状态
+            toggleInterface(serviceId, interfaceId) {
+                const methodsContainer = document.getElementById(`methods-${serviceId}-${interfaceId}`);
+                const icon = document.getElementById(`interface-icon-${serviceId}-${interfaceId}`);
+                
+                if (methodsContainer.classList.contains('expanded')) {
+                    methodsContainer.classList.remove('expanded');
+                    icon.textContent = '▶';
+                    icon.classList.remove('expanded');
+                    this.collapsedStates.interfaces[`${serviceId}-${interfaceId}`] = false;
+                } else {
+                    methodsContainer.classList.add('expanded');
+                    icon.textContent = '▼';
+                    icon.classList.add('expanded');
+                    this.collapsedStates.interfaces[`${serviceId}-${interfaceId}`] = true;
+                }
+                
+                this.saveCollapsedStates();
+            }
+
+            // 保存折叠状态到localStorage
+            saveCollapsedStates() {
+                localStorage.setItem('dubbo-test-collapsed-states', JSON.stringify(this.collapsedStates));
+            }
+
+            // 从localStorage加载折叠状态
+            loadCollapsedStates() {
+                const saved = localStorage.getItem('dubbo-test-collapsed-states');
+                if (saved) {
+                    this.collapsedStates = JSON.parse(saved);
+                }
+            }
+
+            // 应用折叠状态
+            applyCollapsedStates() {
+                // 应用服务折叠状态
+                Object.keys(this.collapsedStates.services).forEach(serviceId => {
+                    const interfacesContainer = document.getElementById(`interfaces-${serviceId}`);
+                    const icon = document.getElementById(`service-icon-${serviceId}`);
+                    
+                    if (interfacesContainer && icon) {
+                        if (this.collapsedStates.services[serviceId]) {
+                            interfacesContainer.classList.add('expanded');
+                            icon.textContent = '▼';
+                            icon.classList.add('expanded');
+                        } else {
+                            interfacesContainer.classList.remove('expanded');
+                            icon.textContent = '▶';
+                            icon.classList.remove('expanded');
+                        }
+                    }
+                });
+
+                // 应用接口折叠状态
+                Object.keys(this.collapsedStates.interfaces).forEach(key => {
+                    const methodsContainer = document.getElementById(`methods-${key}`);
+                    const icon = document.getElementById(`interface-icon-${key}`);
+                    
+                    if (methodsContainer && icon) {
+                        if (this.collapsedStates.interfaces[key]) {
+                            methodsContainer.classList.add('expanded');
+                            icon.textContent = '▼';
+                            icon.classList.add('expanded');
+                        } else {
+                            methodsContainer.classList.remove('expanded');
+                            icon.textContent = '▶';
+                            icon.classList.remove('expanded');
+                        }
+                    }
+                });
+            }
+        }
+
+        // 初始化应用
+        const app = new DubboTestUI();
+    </script>
+</body>
+</html>

@@ -1,39 +1,39 @@
 {
   "services": [
     {
-      "id": "user-service-001",
-      "name": "用户服务",
+      "id": "11a62dad-6a22-4b9b-aa6d-9d0355873219",
+      "name": "test01",
       "dubbo_config": {
-        "host": "127.0.0.1",
-        "port": 20880,
+        "host": "192.168.2.88",
+        "port": 28880,
         "timeout": 5000,
         "version": "1.0.0",
-        "group": "user"
+        "group": ""
       },
       "interfaces": [
         {
-          "id": "user-interface-001",
-          "name": "com.company.service.user.UserService",
+          "id": "5a570a68-0712-4941-a216-ac6dcad2ab34",
+          "name": "com.example.api.UserService",
           "methods": [
             {
-              "id": "get-user-info",
-              "name": "getUserInfo",
-              "params": "{\"userId\": \"123456\"}",
-              "return_type": "UserDTO",
+              "id": "3de56107-be71-4f87-899b-ced9d19766df",
+              "name": "sayHello",
+              "params": "\"Hello World\"",
+              "return_type": "String",
+              "description": "返回问候语"
+            },
+            {
+              "id": "4de56107-be71-4f87-899b-ced9d19766df",
+              "name": "getUserById",
+              "params": "123456",
+              "return_type": "UserInfo",
               "description": "根据用户ID获取用户信息"
             },
             {
-              "id": "update-user",
-              "name": "updateUser",
-              "params": "{\"userId\": \"123456\", \"name\": \"张三\", \"email\": \"zhangsan@example.com\"}",
-              "return_type": "boolean",
-              "description": "更新用户信息"
-            },
-            {
-              "id": "create-user",
+              "id": "5de56107-be71-4f87-899b-ced9d19766df",
               "name": "createUser",
-              "params": "{\"name\": \"李四\", \"email\": \"lisi@example.com\", \"phone\": \"13800138000\"}",
-              "return_type": "String",
+              "params": "{\"userId\": 123456, \"name\": \"张三\", \"email\": \"zhangsan@example.com\"}",
+              "return_type": "boolean",
               "description": "创建新用户"
             }
           ]

@@ -165,6 +165,23 @@ class DubboTestWebServer {
             }
         });
 
+        // 测试连接
+        this.app.post('/api/test-connection', async (req, res) => {
+            try {
+                const { serviceId } = req.body;
+                
+                const service = this.dataManager.getService(serviceId);
+                if (!service) {
+                    return res.status(404).json({ success: false, error: '未找到指定的服务' });
+                }
+
+                const result = await this.dubboClient.testConnection(service.dubboConfig);
+                res.json({ success: true, data: result });
+            } catch (error) {
+                res.status(500).json({ success: false, error: error.message });
+            }
+        });
+
         // 主页
         this.app.get('/', (req, res) => {
             res.sendFile(path.join(__dirname, 'public', 'index.html'));
